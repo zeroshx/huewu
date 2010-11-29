@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.huewu.apps.logtoaster" android:versionCode="1"
+	android:versionName="1.0">
+	<application android:icon="@drawable/toast" android:label="@string/app_name"
+		android:debuggable="false">
+		<activity android:name="com.huewu.example.logreader.LogReader"
+			android:windowSoftInputMode="stateHidden"
+			android:screenOrientation="portrait" android:launchMode="singleInstance"
+			android:label="@string/app_name">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity android:name="com.huewu.example.logreader.LogRemocon" android:launchMode="singleTask"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar"
+			android:label="@string/app_name" />
+		<service android:name="com.huewu.example.logreader.LoggingService" />
+	</application>
+	<uses-sdk android:minSdkVersion="7" />
+
+	<uses-permission android:name="android.permission.READ_LOGS"></uses-permission>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+</manifest> 
