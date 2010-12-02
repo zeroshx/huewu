@@ -3,6 +3,6 @@
     android:minWidth="160px"
     android:minHeight="200px"
     android:updatePeriodMillis="86400000"
-    android:initialLayout="@layout/call_list"
+    android:initialLayout="@layout/call_list_still"
     android:configure="com.huewu.apps.recentcallwidget.RecentCallWidgetSetting" >
 </appwidget-provider>
