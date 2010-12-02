@@ -10,8 +10,20 @@
 	    android:text="@string/hello"
 	    />
 	<Button
+		android:id="@+id/register"
 	    android:layout_width="fill_parent" 
 	    android:layout_height="wrap_content" 
+	    android:text="Register Widget"
 	    android:onClick="handleClick"
-		/>
+		/>	    
+	<Button
+		android:id="@+id/start"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content" 
+	    android:text="Start Animation"
+	    android:onClick="handleClick"
+		/>	    
+	 <include 
+	 	layout = "@layout/call_list_still"
+	 />
 </LinearLayout>
