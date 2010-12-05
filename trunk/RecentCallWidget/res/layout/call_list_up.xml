@@ -1,10 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/widget"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
   android:background="#000000"
+  android:alwaysDrawnWithCache="true"
   >
+<LinearLayout
+  	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/list"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	android:background="#555500"
+	android:layoutAnimation="@anim/layout_bottom_to_top_slide"	
+	android:animationCache="true"	
+	>
+	  	<include
+	  		android:id="@+id/call1"
+	  		layout="@layout/call_item"
+	  		android:layout_width="fill_parent"
+	  		android:layout_height="fill_parent"
+	  		android:layout_weight="1"  	  	
+	  		/>
+	  	<include
+	  		android:id="@+id/call2"
+	  		layout="@layout/call_item"	
+	  		android:layout_width="fill_parent"
+	  		android:layout_height="fill_parent"
+	  		android:layout_weight="1"  	  	
+	  		/>
+	  	<include
+	  		android:id="@+id/call3"
+	  		layout="@layout/call_item"	
+	  		android:layout_width="fill_parent"
+	  		android:layout_height="fill_parent"
+	  		android:layout_weight="1"  	  	
+	  		/>
+	  	<include
+	  		android:id="@+id/call4"
+	  		layout="@layout/call_item"	
+	  		android:layout_width="fill_parent"
+	  		android:layout_height="fill_parent"
+	  		android:layout_weight="1"  	  	
+	  		/>
+	  	<include
+	  		android:id="@+id/call5"
+	  		layout="@layout/call_item"	
+	  		android:layout_width="fill_parent"
+	  		android:layout_height="fill_parent"
+	  		android:layout_weight="1"  	  	
+	  		/>	  			  		
+</LinearLayout>  	
   	  <Button
 	  android:id="@+id/scrollUp"
 	  android:layout_width="fill_parent"
@@ -18,43 +66,6 @@
 	  android:layout_width="fill_parent"
 	  android:layout_height="40dp"
 	  android:text="Down"
-  	  />  	  
-  	  <LinearLayout
-	  android:id="@+id/list"
-	  android:animationCache="true"
-	  android:layoutAnimation="@anim/layout_bottom_to_top_slide"
-	  android:layout_below="@id/scrollUp"
-	  android:layout_above="@id/scrollDown"
-	  android:layout_width="fill_parent"
-	  android:layout_height="fill_parent"
-	  android:orientation="vertical"
-	  android:background="#555500"
-  	  >
-  	  	<include
-  	  		android:id="@+id/call1"  	  	
-  	  		layout="@layout/call_item"
-			android:layout_width="fill_parent"  	  		
-			android:layout_height="60dp"
-			android:layout_marginTop="-120dp"
-  	  		/>
-  	  	<include
-  	  		android:id="@+id/call2"
-  	  		layout="@layout/call_item"
-			android:layout_width="fill_parent"  	  		
-			android:layout_height="60dp"
-			android:layout_marginTop="-60dp"
-  	  		/>
-  	  	<include
-  	  		android:id="@+id/call3"
-  	  		layout="@layout/call_item"	
-  	  		/>
-  	  	<include
-  	  		android:id="@+id/call4"
-  	  		layout="@layout/call_item"	
-  	  		/>  	  		
-  	  	<include
-  	  		android:id="@+id/call5"
-  	  		layout="@layout/call_item"	
-  	  		/>  	  		
-  	  </LinearLayout>
+  	  />  
 </RelativeLayout>
+
