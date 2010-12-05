@@ -11,80 +11,75 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.RemoteViews;
 
+/**
+ * <p>
+ * @file			RecentCallWidget.java
+ * @version			1.0
+ * @date 			Dec. 5, 2010
+ * @author 			huewu.yang
+ * <p>
+ * <br>
+ * Implement RecentCall Widget. 
+ * <br>
+ * <p>
+ * This program is subject to copyright protection in accordance with the
+ * applicable law. It must not, except where allowed by law, by any means or
+ * in any form be reproduced, distributed or lent. Moreover, no part of the
+ * program may be used, viewed, printed, disassembled or otherwise interfered
+ * with in any form, except where allowed by law, without the express written
+ * consent of the copyright holder.
+ * <p>
+ * <br>
+ * All Rights Reserved.   
+ */
+
 public class RecentCallWidget extends AppWidgetProvider {
 
 	final static String ACTION_SCROLL_UP = "apps.huewu.recentcall.action.SCROLL_UP";
 	final static String ACTION_SCROLL_DOWN = "apps.huewu.recentcall.action.SCROLL_DOWN";
-	final static String ACTION_SENDTO = "apps.huewu.recentcall.action.SENDTO";
-
+	final static String ACTION_CALL_1 = "apps.huewu.recentcall.action.CALL_1";
+	final static String ACTION_CALL_2 = "apps.huewu.recentcall.action.CALL_2";
+	final static String ACTION_CALL_3 = "apps.huewu.recentcall.action.CALL_3";
+	
+	private static RecentCallWidgetManager mWidgetManager = null;	
+	
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
 
-		final int N = appWidgetIds.length;
+		//RecentCallWidgetManager can be finalized at any time(when this process is killed) 
+		if(mWidgetManager == null)
+			mWidgetManager = new RecentCallWidgetManager(context);
+		
+		RemoteViews still = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_STILL_WIDGET);		
 
-		// Perform this loop procedure for each App Widget that belongs to this provider
-		for (int i=0; i<N; i++) {
-			int appWidgetId = appWidgetIds[i];
-			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.call_list_still);
-
-			Intent up = new Intent(ACTION_SCROLL_UP);
-			Intent down = new Intent(ACTION_SCROLL_DOWN);
-
-			PendingIntent pendingUp 
-			= PendingIntent.getBroadcast(context, 0, up, PendingIntent.FLAG_CANCEL_CURRENT);
-			PendingIntent pendingDown 
-			= PendingIntent.getBroadcast(context, 0, down, PendingIntent.FLAG_CANCEL_CURRENT);
-
-			views.setOnClickPendingIntent(R.id.scrollUp, pendingUp);
-			views.setOnClickPendingIntent(R.id.scrollDown, pendingDown);
-
-			appWidgetManager.updateAppWidget(appWidgetId, views);
-		}				
+		appWidgetManager.updateAppWidget(appWidgetIds, still);		
 	}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		super.onReceive(context, intent);
-
-		if(intent == null)
-			return;
-
+		
+		if( intent.getAction().equals(ACTION_SCROLL_UP) != true && 
+				intent.getAction().equals(ACTION_SCROLL_DOWN) != true)
+		return;
+		
+		if(mWidgetManager == null)
+			mWidgetManager = new RecentCallWidgetManager(context);		
+		
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-		RemoteViews views = null;
 		ComponentName cpName = new ComponentName(context, RecentCallWidget.class);
+		
+		RemoteViews views = null;
+		views = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_STILL_WIDGET);
+		appWidgetManager.updateAppWidget(cpName, views);		
+
 		if( intent.getAction().equals(ACTION_SCROLL_UP) == true ){
-			views = new RemoteViews(context.getPackageName(), R.layout.call_list_up);
-		}else if( intent.getAction().equals(ACTION_SCROLL_DOWN) == true ){
-			views = new RemoteViews(context.getPackageName(), R.layout.call_list_down);
+			views = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_UP_SCROLLING_WIDGET);
 		}else{
-			return;
+			views = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_DOWN_SCROLLING_WIDGET);
 		}
 		
-		Intent up = new Intent(ACTION_SCROLL_UP);
-		Intent down = new Intent(ACTION_SCROLL_DOWN);	
-		Intent contact = new Intent(context, ShowQuickContact.class);
-
-		PendingIntent pendingUp 
-			= PendingIntent.getBroadcast(context, 0, up, PendingIntent.FLAG_CANCEL_CURRENT);
-		PendingIntent pendingDown 
-			= PendingIntent.getBroadcast(context, 0, down, PendingIntent.FLAG_CANCEL_CURRENT);
-		PendingIntent pendingContact
-			= PendingIntent.getActivity(context, 0, contact, PendingIntent.FLAG_CANCEL_CURRENT);
-		
-
-		views.setOnClickPendingIntent(R.id.scrollUp, pendingUp);
-		views.setOnClickPendingIntent(R.id.scrollDown, pendingDown);
-		views.setOnClickPendingIntent(R.id.call1, pendingContact);
-		views.setOnClickPendingIntent(R.id.call2, pendingContact);
-		views.setOnClickPendingIntent(R.id.call3, pendingContact);
-		views.setOnClickPendingIntent(R.id.call4, pendingContact);
-		views.setOnClickPendingIntent(R.id.call5, pendingContact);
-
-		for(int id : appWidgetManager.getAppWidgetIds(cpName) ){
-			RemoteViews still = new RemoteViews(context.getPackageName(), R.layout.call_list_still);
-			appWidgetManager.updateAppWidget(id, still);
-			appWidgetManager.updateAppWidget(id, views);
-		}
+		appWidgetManager.updateAppWidget(cpName, views);		
 	}
 }//end of class
