@@ -46,10 +46,10 @@ public class ShowQuickContactActivity extends Activity{
 		if(lookup == null){
 			Uri createUri = Uri.fromParts("tel", number, null);
 			Intent intent = new Intent(ContactsContract.Intents.SHOW_OR_CREATE_CONTACT, createUri);
+			//create a temp contact?
             startActivity(intent);
 		}else{
 			lookupUri = ContactsContract.Contacts.getLookupUri(id, lookup);
-//			lookupUri = Uri.withAppendedPath(Contacts.CONTENT_LOOKUP_URI, lookup);
 			QuickContact.showQuickContact(this, tv,lookupUri, QuickContact.MODE_LARGE, null);
 		}
 		finish();
