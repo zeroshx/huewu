@@ -3,13 +3,21 @@ package com.huewu.apps.recentcallwidget;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.huewu.apps.recentcallwidget.RecentCallWidgetManager.SimpleContact;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.PhoneLookup;
+import android.telephony.SmsManager;
+import android.telephony.SmsMessage;
+import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -70,33 +78,44 @@ public class RecentCallWidgetManager {
 
 		RemoteViews views = null;
 		//#1. get recent call logs.
-		String[] numbers = mContactsManager.getRecentContactNumbers(MAX_CONTACTS_COUNT);
+		 SimpleContact[] contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
 		
-		if(numbers.length - DISPLAY_CONTACTS_COUNT < mIndex)
+		if(contacts.length - DISPLAY_CONTACTS_COUNT < mIndex)
 			mIndex = 0;	//reset index.
 
 		//#2. build a proper remote view.
 		switch(mode){
 		case MODE_STILL_WIDGET:
 			views = new RemoteViews(context.getPackageName(), R.layout.call_list_still);
-			applyScroll(views, numbers, SCROLL_NO);
+			applyScroll(views, contacts, SCROLL_NO);
 			break;
 		case MODE_UP_SCROLLING_WIDGET:
 			views = new RemoteViews(context.getPackageName(), R.layout.call_list_up);
-			applyScroll(views, numbers, SCROLL_UP);
+			applyScroll(views, contacts, SCROLL_UP);
 			break;
 		case MODE_DOWN_SCROLLING_WIDGET:
 			views = new RemoteViews(context.getPackageName(), R.layout.call_list_down);
-			applyScroll(views, numbers, SCROLL_DOWN);
+			applyScroll(views, contacts, SCROLL_DOWN);
 			break;
 		}
 
 		//#3. set texts.
-		setCallListTexts(views, numbers);
+		setCallListTexts(views, contacts);
 		return views;
 	}
+	
+	public void markContacted(Object[] pdusObj) {
+		if(pdusObj == null)
+			return;
+		
+		for(Object pdu : pdusObj){
+			SmsMessage sms = SmsMessage.createFromPdu((byte[]) pdu);
+			if(sms != null)
+				mContactsManager.markContacted(sms.getOriginatingAddress());
+		}
+	}
 
-	private void applyScroll(RemoteViews views, String[] numbers, int move) {
+	private void applyScroll(RemoteViews views, SimpleContact[] contacts, int move) {
 
 		switch(move){
 		case SCROLL_NO:
@@ -104,10 +123,10 @@ public class RecentCallWidgetManager {
 			views.setViewVisibility(mCallItemList[4], View.INVISIBLE);	//hide		
 			break;
 		case SCROLL_UP:
-			if(mIndex < numbers.length - 3){
+			if(mIndex < contacts.length - 3){
 				++mIndex;
 				try{
-					views.setTextViewText(mCallItemList[0], numbers[mIndex-1]);	//hide		
+					views.setTextViewText(mCallItemList[0], contacts[mIndex-1].mDisplayName);	//hide		
 				}catch(Exception e){
 				}				
 			}
@@ -116,7 +135,7 @@ public class RecentCallWidgetManager {
 			if(mIndex > 0){
 				--mIndex;
 				try{
-					views.setTextViewText(mCallItemList[4], numbers[mIndex+3]);	//hide		
+					views.setTextViewText(mCallItemList[4], contacts[mIndex+3].mDisplayName);	//hide		
 				}catch(Exception e){
 				}
 			}
@@ -131,7 +150,7 @@ public class RecentCallWidgetManager {
 			views.setOnClickPendingIntent(R.id.scrollDown, pendingDown);
 		}
 		
-		if(mIndex < numbers.length - 3){
+		if(mIndex < contacts.length - 3){
 			//scroll up is possible.
 			Intent up = new Intent(RecentCallWidget.ACTION_SCROLL_UP);			
 			PendingIntent pendingUp 
@@ -146,45 +165,83 @@ public class RecentCallWidgetManager {
 		editor.commit();
 	}
 
-	private void setCallListTexts(RemoteViews views, String[] numbers) {
+	private void setCallListTexts(RemoteViews views, SimpleContact[] contacts) {
 		if(views == null)
 			return;
 
-		int count = ( (numbers.length - mIndex) < DISPLAY_CONTACTS_COUNT ) ? (numbers.length - mIndex) : DISPLAY_CONTACTS_COUNT;
+		int count = ( (contacts.length - mIndex) < DISPLAY_CONTACTS_COUNT ) ? (contacts.length - mIndex) : DISPLAY_CONTACTS_COUNT;
 
 		int index = 0;
 		for(index = 0; index <count; ++index){
-			String number = numbers[mIndex + index];
-			views.setTextViewText(mCallItemList[index + 1], number);	
+			String name = contacts[mIndex + index].mDisplayName;
+			Uri uri = contacts[mIndex + index].mUri;
+			views.setTextViewText(mCallItemList[index + 1], name);	
 			Intent intent = new Intent(mCallIntentList[index]);
-			intent.putExtra(CallLog.Calls.NUMBER, number);
+			intent.setData(uri);
+			intent.putExtra(ContactsContract.Contacts.DISPLAY_NAME, name);
 			PendingIntent pendingCall = PendingIntent.getActivity(mAppContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 			views.setOnClickPendingIntent(mCallItemList[index + 1], pendingCall);			
 		}
 
 		for(index = index; index < mCallItemList.length - 2; ++ index)
 			views.setViewVisibility(mCallItemList[index + 1], View.INVISIBLE);	//hide
-	}	
+	}
+	
+	
+	class SimpleContact {
+		String mDisplayName;
+		Uri mUri;
+		public SimpleContact(String name, Uri uri){
+			mDisplayName = name;
+			mUri = uri;
+		}
+	}
 
-	public class ContactsManager {
+	class ContactsManager {
 
-		public String[] getRecentContactNumbers(int count){
+		public SimpleContact[] getRecentContactDisplayName(int count){
 
-			//#1. check phone call logs.
-			List<String> numbers = new ArrayList<String>();
-			Cursor c = mAppContext.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, CallLog.Calls.DATE + " DESC");
-			int index = c.getColumnIndex(CallLog.Calls.NUMBER);
+			Cursor c = mAppContext.getContentResolver().query(
+					ContactsContract.Contacts.CONTENT_URI, 
+					new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.LOOKUP_KEY}, 
+					null, 
+					null, 
+					ContactsContract.Contacts.LAST_TIME_CONTACTED + " DESC");
+
+			if(c == null){
+				return new SimpleContact[0];
+			}
+
+			int ct = 0;
+			int listSize = (count < c.getCount()) ? count : c.getCount();
+
+			SimpleContact[] result = new SimpleContact[listSize];
 			while(c.moveToNext() == true){
-				numbers.add(c.getString(index));
+				//Log.i("RecentCallWidget", "Name:" + c.getString(idx1) + " Value: " + c.getString(idx2));
+				long id = c.getLong(0);
+				String name = c.getString(1);
+				String lookup = c.getString(2);
+				Uri uri = ContactsContract.Contacts.getLookupUri(id, lookup);
+				SimpleContact contact = new SimpleContact(name, uri);
+				result[ct] = contact;
+				++ct;
+				if(ct == listSize)	//fill list.
+					break;
 			}
 			c.close();
 
-			count = ( count > numbers.size() ) ? numbers.size() : count;
-			numbers = numbers.subList(0, count);
-
-			String[] result = new String[numbers.size()];
-			numbers.toArray(result);
 			return result;
+		}
+
+		public void markContacted(String originatingAddress) {
+			Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(originatingAddress));
+			Cursor c = mAppContext.getContentResolver().query(
+					uri, null, null, null, null);
+			while(c.moveToNext() == true){
+				long id = c.getLong(c.getColumnIndex(ContactsContract.PhoneLookup._ID));
+				ContactsContract.Contacts.markAsContacted(mAppContext.getContentResolver(), id);
+			}
+			c.close();
 		}
 	}//end of inner class	
 

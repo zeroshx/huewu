@@ -91,12 +91,22 @@ public class RecentCallWidget extends AppWidgetProvider {
 			//update recent call list.
 			stillviews = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_STILL_WIDGET);
 		}else if(action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED) == true){
-			//update recent call list.
-			updateTime = 5000;
-			Log.i("RecentCallWidget", "Received Intent: " + intent.getStringExtra(TelephonyManager.EXTRA_STATE));
+			String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+			if(state != null && state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK) == true){
+				//update recent call list.
+				updateTime = 5000;
+				Log.i("RecentCallWidget", "Received Intent: " + intent.getStringExtra(TelephonyManager.EXTRA_STATE));
+			}else{
+				//do nothing.				
+				return;
+			}
 		}else if(action.equals(ACTION_SMS_RECEIVED) == true){
 			//update recent call list.
 			updateTime = 5000;
+			//mark contacted.
+			Bundle bundle = intent.getExtras();
+			Object[] pdusObj = (Object[])bundle.get("pdus");
+			mWidgetManager.markContacted(pdusObj);
 		}else if(action.equals(ACTION_UPDATE) == true){
 			//update recent call list.
 			stillviews = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_STILL_WIDGET);		
