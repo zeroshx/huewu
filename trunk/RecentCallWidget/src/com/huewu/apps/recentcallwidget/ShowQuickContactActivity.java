@@ -27,30 +27,15 @@ public class ShowQuickContactActivity extends Activity{
 		setContentView(tv);
 
 		//get content uri from call log.
-		String number = getIntent().getStringExtra(CallLog.Calls.NUMBER);
-		if(number == null){
+		Uri data = getIntent().getData();
+		if(data == null){
 			finish();
 			return;
 		}
-
-		Uri uri = Uri.withAppendedPath(PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
-		Cursor c = managedQuery(uri, null, null, null, null);
-		String lookup = null;
-		long id = 0L;
-		while(c.moveToNext() == true){
-			lookup = c.getString(c.getColumnIndex(PhoneLookup.LOOKUP_KEY));
-			id = c.getLong(c.getColumnIndex(PhoneLookup._ID));
-		}
-		c.close();
-
-		if(lookup == null){
-			Uri createUri = Uri.fromParts("tel", number, null);
-			Intent intent = new Intent(ContactsContract.Intents.SHOW_OR_CREATE_CONTACT, createUri);
-			//create a temp contact?
-            startActivity(intent);
-		}else{
-			lookupUri = ContactsContract.Contacts.getLookupUri(id, lookup);
-			QuickContact.showQuickContact(this, tv,lookupUri, QuickContact.MODE_LARGE, null);
+		
+		try{
+			QuickContact.showQuickContact(this, tv, data, QuickContact.MODE_LARGE, null);
+		}catch(Exception e){
 		}
 		finish();
 	}
