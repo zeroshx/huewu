@@ -10,22 +10,28 @@ import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.PhoneLookup;
 import android.provider.ContactsContract.QuickContact;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
 
 public class ShowQuickContactActivity extends Activity{
 	
-	Uri lookupUri = null;
-	boolean finish = false;
+	Uri mLookupUri = null;
+	View mView = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		TextView tv = new TextView(this);
-		tv.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		tv.setBackgroundColor(Color.TRANSPARENT);
-		setContentView(tv);
-
+		mView = new View(this);
+		setContentView(mView);
+	}
+	
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if(hasFocus == false)
+			return;
+		
 		//get content uri from call log.
 		Uri data = getIntent().getData();
 		if(data == null){
@@ -34,7 +40,7 @@ public class ShowQuickContactActivity extends Activity{
 		}
 		
 		try{
-			QuickContact.showQuickContact(this, tv, data, QuickContact.MODE_LARGE, null);
+			QuickContact.showQuickContact(this, mView, data, QuickContact.MODE_LARGE, null);
 		}catch(Exception e){
 		}
 		finish();

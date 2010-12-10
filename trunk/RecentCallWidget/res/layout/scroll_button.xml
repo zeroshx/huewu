@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+  	  <Button
+	  android:id="@+id/scrollUp"
+	  android:layout_width="fill_parent"
+	  android:layout_height="40dp"
+	  android:layout_alignParentTop="true"
+	  android:text="UP"
+  	  />
+  	  <Button
+	  android:id="@+id/scrollDown"
+	  android:layout_alignParentBottom="true"	  
+	  android:layout_width="fill_parent"
+	  android:layout_height="40dp"
+	  android:text="Down"
+  	  />  
+</merge>

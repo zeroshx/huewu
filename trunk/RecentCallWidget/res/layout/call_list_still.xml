@@ -8,60 +8,13 @@
   android:alwaysDrawnWithCache="true"
   >
 	<LinearLayout
-  	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/list"
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent"
-	android:orientation="vertical"
+		layout="@layout/call_list"  
+		android:id="@+id/list"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:orientation="vertical"
 	>
-	  	<include
-	  		android:id="@+id/call1"
-	  		layout="@layout/call_item"
-	  		android:layout_width="fill_parent"
-	  		android:layout_height="fill_parent"
-	  		android:layout_weight="1"  	  	
-	  		/>
-	  	<include
-	  		android:id="@+id/call2"
-	  		layout="@layout/call_item"	
-	  		android:layout_width="fill_parent"
-	  		android:layout_height="fill_parent"
-	  		android:layout_weight="1"  	  	
-	  		/>
-	  	<include
-	  		android:id="@+id/call3"
-	  		layout="@layout/call_item"	
-	  		android:layout_width="fill_parent"
-	  		android:layout_height="fill_parent"
-	  		android:layout_weight="1"  	  	
-	  		/>
-	  	<include
-	  		android:id="@+id/call4"
-	  		layout="@layout/call_item"	
-	  		android:layout_width="fill_parent"
-	  		android:layout_height="fill_parent"
-	  		android:layout_weight="1"  	  	
-	  		/>
-	  	<include
-	  		android:id="@+id/call5"
-	  		layout="@layout/call_item"	
-	  		android:layout_width="fill_parent"
-	  		android:layout_height="fill_parent"
-	  		android:layout_weight="1"  	  	
-	  		/>	  			  		
+		<include layout="@layout/call_list" />
 	</LinearLayout>
-	<Button
-	  android:id="@+id/scrollUp"
-	  android:layout_width="fill_parent"
-	  android:layout_height="30dp"
-	  android:layout_alignParentTop="true"
-	  android:background="@drawable/up_back"
-	/>
-	<Button
-	  android:id="@+id/scrollDown"
-	  android:layout_alignParentBottom="true"	  
-	  android:layout_width="fill_parent"
-	  android:layout_height="30dp"
-	  android:background="@drawable/up_back"	  
-	/>	
+	<include layout="@layout/scroll_button"/>
 </RelativeLayout>
