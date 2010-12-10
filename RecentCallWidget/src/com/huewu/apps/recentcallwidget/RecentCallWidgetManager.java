@@ -119,8 +119,8 @@ public class RecentCallWidgetManager {
 
 		switch(move){
 		case SCROLL_NO:
-			views.setViewVisibility(mCallItemList[0], View.INVISIBLE);	//hide		
-			views.setViewVisibility(mCallItemList[4], View.INVISIBLE);	//hide		
+//			views.setViewVisibility(mCallItemList[0], View.INVISIBLE);	//hide		
+//			views.setViewVisibility(mCallItemList[4], View.INVISIBLE);	//hide		
 			break;
 		case SCROLL_UP:
 			if(mIndex < contacts.length - 3){
