@@ -19,6 +19,7 @@
 		</activity>
 		<receiver android:name="com.huewu.apps.recentcontactswidget.RecentContactsWidget" >
 		    <intent-filter>
+		        <action android:name="android.appwidget.action.ACTION_APPWIDGET_ENABLED" />
 		        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 		        <action android:name="android.intent.action.PHONE_STATE" />
 		        <action android:name="android.provider.Telephony.SMS_RECEIVED"/>		        
@@ -33,4 +34,5 @@
 	<uses-permission android:name="android.permission.WRITE_CONTACTS"/>
 	<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 	<uses-permission android:name="android.permission.RECEIVE_SMS" />
+<uses-sdk android:minSdkVersion="7"></uses-sdk>
 </manifest> 
