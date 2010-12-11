@@ -73,15 +73,24 @@ public class RecentContactsManager {
 		RemoteViews views = null;
 		//#1. get recent call logs.
 		 SimpleContact[] contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
-		
+		 
 		if(contacts.length - DISPLAY_CONTACTS_COUNT < mIndex)	//too few contacts to scroll in the list.
 			mIndex = 0;	//reset index.
 
-		//#2. build a proper remote view.
+		//#3. build a proper remote view.
 		switch(mode){
 		case MODE_STILL_WIDGET:
 			views = new RemoteViews(context.getPackageName(), R.layout.call_list_still);
-			applyScroll(views, contacts, SCROLL_NO);
+			//#2. check is there any change?
+			if(contacts.length > 0){
+				if(contacts[0].mLastContactTime == mLastContacted){
+					//no change.
+					applyScroll(views, contacts, SCROLL_NO);
+				}else{
+					applyScroll(views, contacts, SCROLL_UP);	//new item is added.
+					mLastContacted = contacts[0].mLastContactTime;
+				}
+			}			
 			break;
 		case MODE_UP_SCROLLING_WIDGET:
 			views = new RemoteViews(context.getPackageName(), R.layout.call_list_up);
@@ -201,9 +210,11 @@ public class RecentContactsManager {
 	class SimpleContact {
 		String mDisplayName;
 		Uri mUri;
-		public SimpleContact(String name, Uri uri){
+		long mLastContactTime;
+		public SimpleContact(String name, Uri uri, long time){
 			mDisplayName = name;
 			mUri = uri;
+			mLastContactTime = time;
 		}
 	}
 
@@ -216,7 +227,8 @@ public class RecentContactsManager {
 			
 			Cursor c = mAppContext.getContentResolver().query(
 					ContactsContract.Contacts.CONTENT_URI, 
-					new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.LOOKUP_KEY}, 
+					new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, 
+							ContactsContract.Contacts.LAST_TIME_CONTACTED, ContactsContract.Contacts.LOOKUP_KEY}, 
 					null, 
 					null, 
 					ContactsContract.Contacts.LAST_TIME_CONTACTED + " DESC");	//sort by LAST_TIME_CONTACTED.
@@ -235,9 +247,10 @@ public class RecentContactsManager {
 				//Log.i("RecentCallWidget", "Name:" + c.getString(idx1) + " Value: " + c.getString(idx2));
 				long id = c.getLong(0);
 				String name = c.getString(1);
-				String lookup = c.getString(2);
+				long time = c.getLong(2);
+				String lookup = c.getString(3);
 				Uri uri = ContactsContract.Contacts.getLookupUri(id, lookup);
-				SimpleContact contact = new SimpleContact(name, uri);
+				SimpleContact contact = new SimpleContact(name, uri, time);
 				result[ct] = contact;
 				++ct;
 				if(ct == listSize)	//list is full.
@@ -274,5 +287,6 @@ public class RecentContactsManager {
 	private int[] mCallItemList = new int[]{R.id.call1, R.id.call2, R.id.call3, R.id.call4, R.id.call5};
 	private String[] mCallIntentList = new String[]{RecentContactsWidget.ACTION_CALL_1, RecentContactsWidget.ACTION_CALL_2, RecentContactsWidget.ACTION_CALL_3};
 	private int mIndex = 0;
+	private long mLastContacted = -1;
 
 }//end of class
