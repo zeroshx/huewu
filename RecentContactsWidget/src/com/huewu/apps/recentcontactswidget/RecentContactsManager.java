@@ -1,9 +1,10 @@
-package com.huewu.apps.recentcallwidget;
+package com.huewu.apps.recentcontactswidget;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.huewu.apps.recentcallwidget.RecentCallWidgetManager.SimpleContact;
+import com.huewu.apps.recentcontactswidget.R;
+import com.huewu.apps.recentcontactswidget.RecentContactsManager.SimpleContact;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -43,7 +44,7 @@ import android.widget.RemoteViews;
  * All Rights Reserved.   
  */
 
-public class RecentCallWidgetManager {
+public class RecentContactsManager {
 
 	final static int MODE_STILL_WIDGET = 1001;
 	final static int MODE_UP_SCROLLING_WIDGET = 1002;
@@ -56,7 +57,7 @@ public class RecentCallWidgetManager {
 	final static int SCROLL_DOWN = 2002;
 	final static int SCROLL_NO = 2003;
 
-	public RecentCallWidgetManager(Context context){
+	public RecentContactsManager(Context context){
 		mAppContext = context.getApplicationContext();
 		mContactsManager = new ContactsManager();
 		
@@ -144,7 +145,7 @@ public class RecentCallWidgetManager {
 
 		if(mIndex > 0){
 			//scroll down is possible.
-			Intent down = new Intent(RecentCallWidget.ACTION_SCROLL_DOWN);
+			Intent down = new Intent(RecentContactsWidget.ACTION_SCROLL_DOWN);
 			PendingIntent pendingDown 
 				= PendingIntent.getBroadcast(mAppContext, 0, down, PendingIntent.FLAG_CANCEL_CURRENT);
 			views.setOnClickPendingIntent(R.id.scrollDown, pendingDown);
@@ -152,7 +153,7 @@ public class RecentCallWidgetManager {
 		
 		if(mIndex < contacts.length - 3){
 			//scroll up is possible.
-			Intent up = new Intent(RecentCallWidget.ACTION_SCROLL_UP);			
+			Intent up = new Intent(RecentContactsWidget.ACTION_SCROLL_UP);			
 			PendingIntent pendingUp 
 				= PendingIntent.getBroadcast(mAppContext, 0, up, PendingIntent.FLAG_CANCEL_CURRENT);
 			views.setOnClickPendingIntent(R.id.scrollUp, pendingUp);
@@ -183,8 +184,9 @@ public class RecentCallWidgetManager {
 			views.setOnClickPendingIntent(mCallItemList[index + 1], pendingCall);			
 		}
 
-		for(index = index; index < mCallItemList.length - 2; ++ index)
-			views.setViewVisibility(mCallItemList[index + 1], View.INVISIBLE);	//hide
+//		for(index = index; index < mCallItemList.length - 2; ++ index){
+//			views.setViewVisibility(mCallItemList[index + 1], View.INVISIBLE);	//hide
+//		}
 	}
 	
 	
@@ -200,7 +202,7 @@ public class RecentCallWidgetManager {
 	class ContactsManager {
 
 		public SimpleContact[] getRecentContactDisplayName(int count){
-
+			
 			Cursor c = mAppContext.getContentResolver().query(
 					ContactsContract.Contacts.CONTENT_URI, 
 					new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.LOOKUP_KEY}, 
@@ -252,7 +254,7 @@ public class RecentCallWidgetManager {
 	private Context mAppContext = null;
 	private ContactsManager mContactsManager = null;
 	private int[] mCallItemList = new int[]{R.id.call1, R.id.call2, R.id.call3, R.id.call4, R.id.call5};
-	private String[] mCallIntentList = new String[]{RecentCallWidget.ACTION_CALL_1, RecentCallWidget.ACTION_CALL_2, RecentCallWidget.ACTION_CALL_3};
+	private String[] mCallIntentList = new String[]{RecentContactsWidget.ACTION_CALL_1, RecentContactsWidget.ACTION_CALL_2, RecentContactsWidget.ACTION_CALL_3};
 	private int mIndex = 0;
 
 }//end of class
