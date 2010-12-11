@@ -18,7 +18,7 @@ import android.widget.RemoteViews;
 
 /**
  * <p>
- * @file			RecentCallWidget.java
+ * @file			RecentContactsWidget.java
  * @version			1.0
  * @date 			Dec. 5, 2010
  * @author 			huewu.yang
@@ -44,8 +44,6 @@ public class RecentContactsWidget extends AppWidgetProvider {
 	final static String ACTION_UPDATE = "apps.huewu.recentcall.action.UPDATE";	//user click update button, or updating time is coming(once per 1 min)
 	final static String ACTION_SCROLL_UP = "apps.huewu.recentcall.action.SCROLL_UP";
 	final static String ACTION_SCROLL_DOWN = "apps.huewu.recentcall.action.SCROLL_DOWN";
-	
-	
 	final static String ACTION_CALL_1 = "apps.huewu.recentcall.action.CALL_1";
 	final static String ACTION_CALL_2 = "apps.huewu.recentcall.action.CALL_2";
 	final static String ACTION_CALL_3 = "apps.huewu.recentcall.action.CALL_3";
@@ -55,15 +53,6 @@ public class RecentContactsWidget extends AppWidgetProvider {
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-//		Log.e("RecentCallWidget", "onUpdate() is called");
-//		RemoteViews still = mWidgetManager.makeRecentCallWidget(context, RecentCallWidgetManager.MODE_STILL_WIDGET);		
-//		appWidgetManager.updateAppWidget(appWidgetIds, still);
-//		
-//		//start timer.
-//		AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-//		Intent i = new Intent(ACTION_UPDATE);
-//		PendingIntent pending = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
-//		am.set(AlarmManager.RTC, System.currentTimeMillis() + 60000, pending);		
 	}
 	
 	@Override
@@ -86,14 +75,14 @@ public class RecentContactsWidget extends AppWidgetProvider {
 		long updateTime = 60000;	//defaul 1 min.
 		
 		String action = intent.getAction();
-		Log.i("RecentCallWidget", "Received Intent: " + action);
 		if(action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE) == true){
 			//update recent call list.
 			stillviews = mWidgetManager.makeRecentCallWidget(context, RecentContactsManager.MODE_STILL_WIDGET);
 		}else if(action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED) == true){
 			String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+			//phone call is offhook, the recent contact list may be changed. let's check it.
 			if(state != null && state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK) == true){
-				//update recent call list.
+				//update recent call list only after 5secs.
 				updateTime = 5000;
 				Log.i("RecentCallWidget", "Received Intent: " + intent.getStringExtra(TelephonyManager.EXTRA_STATE));
 			}else{
@@ -119,13 +108,15 @@ public class RecentContactsWidget extends AppWidgetProvider {
 			stillviews = mWidgetManager.makeRecentCallWidget(context, RecentContactsManager.MODE_STILL_WIDGET);		
 			aniViews = mWidgetManager.makeRecentCallWidget(context, RecentContactsManager.MODE_DOWN_SCROLLING_WIDGET);
 		}else{
-			//do nothing.
+			//receive non-handled broadcast intent. do nothing.
 			return;
 		}
 		
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 		ComponentName cpName = new ComponentName(context, RecentContactsWidget.class);
-		appWidgetManager.updateAppWidget(cpName, stillviews);		
+		
+		if(stillviews != null)
+			appWidgetManager.updateAppWidget(cpName, stillviews);		
 		
 		if(aniViews != null)	//need to animate views.
 			appWidgetManager.updateAppWidget(cpName, aniViews);
