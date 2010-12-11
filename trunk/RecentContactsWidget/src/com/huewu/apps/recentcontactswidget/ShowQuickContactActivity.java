@@ -1,4 +1,6 @@
-package com.huewu.apps.recentcallwidget;
+package com.huewu.apps.recentcontactswidget;
+
+import com.huewu.apps.recentcontactswidget.R;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,8 +24,8 @@ public class ShowQuickContactActivity extends Activity{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mView = new View(this);
-		setContentView(mView);
+		setContentView(R.layout.show_quick_contact);
+		mView = findViewById(R.id.view1);
 	}
 	
 	@Override

@@ -3,21 +3,23 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:id="@+id/widget"
   android:layout_width="fill_parent"
-  android:layout_height="fill_parent"
-  android:background="@drawable/widget_back"
-  android:alwaysDrawnWithCache="true"
-  >
+  android:layout_height="fill_parent">
 	<LinearLayout
 		layout="@layout/call_list"  
 		android:id="@+id/list"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:orientation="vertical"
+		android:background="@drawable/widget_back"
 		android:layoutAnimation="@anim/layout_top_to_bottom_slide"	
 		android:animationCache="true"	
-	>
+		android:orientation="vertical">
 		<include layout="@layout/call_list" />
 	</LinearLayout>
+  	<ImageView
+  		android:layout_alignParentTop="true"
+		android:layout_width="fill_parent"
+		android:layout_height="40dp"
+		android:background="@drawable/title"
+  	/>  
 	<include layout="@layout/scroll_button"/>
 </RelativeLayout>
-

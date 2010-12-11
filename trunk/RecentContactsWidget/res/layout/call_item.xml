@@ -3,9 +3,10 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
-	android:textColor="#ffffff"
+	android:textColor="#444444"
 	android:textAppearance="?android:attr/textAppearanceSmall"
-	android:paddingLeft="5dp"
+	android:paddingLeft="20dp"
+	android:paddingBottom="3dp"
 	android:gravity="left|center_vertical"
-	android:background="@drawable/text_back"
+	android:background="@drawable/call_item"
 	/>
