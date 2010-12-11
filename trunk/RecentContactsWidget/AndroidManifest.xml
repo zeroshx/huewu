@@ -6,7 +6,7 @@
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
         <activity
 	        android:theme="@android:style/Theme.Translucent.NoTitleBar" 
-    	    android:name="com.huewu.apps.recentcallwidget.ShowQuickContactActivity"
+    	    android:name="com.huewu.apps.recentcontactswidget.ShowQuickContactActivity"
             android:label="@string/app_name"
             >
 		    <intent-filter>
