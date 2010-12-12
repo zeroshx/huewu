@@ -26,7 +26,8 @@
 		android:layout_toLeftOf="@id/log_list_bar_right"
         android:layout_weight="1" > 
 	<ListView
-		android:id="@+id/log_list" 
+		android:id="@+id/log_list"
+		android:fastScrollEnabled="true"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent" 
 		android:background="#222222" />

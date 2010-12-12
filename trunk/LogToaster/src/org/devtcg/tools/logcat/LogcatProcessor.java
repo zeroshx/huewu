@@ -67,7 +67,7 @@ public abstract class LogcatProcessor extends HandlerThread
 
 		try	{
 			reader = new BufferedReader(
-					new InputStreamReader(mLogcatProc.getInputStream()), BUFFER_SIZE);
+					new InputStreamReader(mLogcatProc.getInputStream(), "utf-8"), BUFFER_SIZE);
 			String line;
 			while ((line = reader.readLine()) != null){
 				onNewline(line);
