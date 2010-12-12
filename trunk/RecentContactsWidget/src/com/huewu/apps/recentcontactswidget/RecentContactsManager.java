@@ -87,7 +87,8 @@ public class RecentContactsManager {
 					//no change.
 					applyScroll(views, contacts, SCROLL_NO);
 				}else{
-					applyScroll(views, contacts, SCROLL_UP);	//new item is added.
+					//new item is added. reset index.
+					mIndex = 0;
 					mLastContacted = contacts[0].mLastContactTime;
 				}
 			}			
