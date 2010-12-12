@@ -85,13 +85,13 @@ public class RecentContactsManager {
 			if(contacts.length > 0){
 				if(contacts[0].mLastContactTime == mLastContacted){
 					//no change.
-					applyScroll(views, contacts, SCROLL_NO);
 				}else{
 					//new item is added. reset index.
 					mIndex = 0;
 					mLastContacted = contacts[0].mLastContactTime;
 				}
 			}			
+			applyScroll(views, contacts, SCROLL_NO);
 			break;
 		case MODE_UP_SCROLLING_WIDGET:
 			views = new RemoteViews(context.getPackageName(), R.layout.call_list_up);
