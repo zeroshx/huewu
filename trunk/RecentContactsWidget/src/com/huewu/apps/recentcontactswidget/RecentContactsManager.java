@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 /**
