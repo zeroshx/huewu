@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 /**
@@ -56,7 +57,31 @@ public class RecentContactsManager {
 		
 		//load current list index. default value is 0.
 		SharedPreferences preference = mAppContext.getSharedPreferences(WIDGET_PREFERENCE, 0);
-		mIndex = preference.getInt(CURRENT_INDEX, 0);
+		mListMode = preference.getInt(CURRENT_MODE, MODE_RECENT);
+		
+		if(mListMode == MODE_FAVORITE){
+			mIndex = preference.getInt(CURRENT_INDEX, 0);
+		}else{
+			mIndex = 0;
+		}
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		if(mAppContext != null){
+			//save current index.
+			try{
+				SharedPreferences preference = mAppContext.getSharedPreferences(WIDGET_PREFERENCE, 0);
+				Editor editor = preference.edit();
+				editor.putInt(CURRENT_INDEX, mFavoriteIndex);
+				editor.commit();
+			}catch(Exception e){
+				//do not annoy use with non-necessary error.
+			}catch(Error e){
+				//do not annoy use with non-necessary error.
+			}
+		}
+		super.finalize();
 	}
 
 	/**
@@ -72,7 +97,17 @@ public class RecentContactsManager {
 
 		RemoteViews views = null;
 		//#1. get recent call logs.
-		 SimpleContact[] contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
+		 SimpleContact[] contacts = null;
+		 switch(mListMode){
+			 case MODE_RECENT:
+				 contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
+				 break;
+			 case MODE_FAVORITE:
+				 contacts = mContactsManager.getFavoriteContactDisplayName(100);
+				 break;
+			 default:	//error happen. default is recent.
+				 contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
+		 }
 		 
 		if(contacts.length - DISPLAY_CONTACTS_COUNT < mIndex)	//too few contacts to scroll in the list.
 			mIndex = 0;	//reset index.
@@ -105,6 +140,18 @@ public class RecentContactsManager {
 
 		//#3. set texts.
 		setCallListTexts(views, contacts);
+		
+		//#4. set mode select intent.
+		Intent i = new Intent(RecentContactsWidget.ACTION_SWITCH_MODE);
+		PendingIntent pi = PendingIntent.getBroadcast(mAppContext, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+		views.setOnClickPendingIntent(R.id.title_button, pi);
+
+		//#5. set title image
+		if(mListMode == MODE_FAVORITE){
+			views.setImageViewResource(R.id.title_button, R.drawable.title_favorite);
+		}else{
+			views.setImageViewResource(R.id.title_button, R.drawable.title_recent);
+		}
 		return views;
 	}
 	
@@ -123,6 +170,28 @@ public class RecentContactsManager {
 			if(sms != null)
 				mContactsManager.markContacted(sms.getOriginatingAddress());
 		}
+	}
+	
+	/**
+	 * toggle list mode (MODE_FAVORITE <-> MODE_RECENT)
+	 */
+	public void toggleMode(){
+		SharedPreferences preference = mAppContext.getSharedPreferences(WIDGET_PREFERENCE, 0);
+		Editor editor = preference.edit();
+		
+		if(mListMode == MODE_FAVORITE){
+			mListMode = MODE_RECENT;
+			//save favorite list index.
+			editor.putInt(CURRENT_MODE, mListMode);
+			editor.putInt(CURRENT_INDEX, mIndex);
+			mIndex = 0;	//reset index.
+		}else{
+			mListMode = MODE_FAVORITE;
+			//load favorite list index.
+			mIndex = preference.getInt(CURRENT_INDEX, 0);;
+		}
+		editor.putInt(CURRENT_MODE, mListMode);
+		editor.commit();
 	}
 
 	private void applyScroll(RemoteViews views, SimpleContact[] contacts, int move) {
@@ -176,12 +245,6 @@ public class RecentContactsManager {
 				= PendingIntent.getBroadcast(mAppContext, 0, up, PendingIntent.FLAG_CANCEL_CURRENT);
 			views.setOnClickPendingIntent(R.id.scrollDown, pendingUp);
 		}
-		
-		//save current index.
-		SharedPreferences preference = mAppContext.getSharedPreferences(WIDGET_PREFERENCE, 0);
-		Editor editor = preference.edit();
-		editor.putInt(CURRENT_INDEX, mIndex);
-		editor.commit();
 	}
 
 	private void setCallListTexts(RemoteViews views, SimpleContact[] contacts) {
@@ -261,6 +324,44 @@ public class RecentContactsManager {
 
 			return result;
 		}
+		
+		SimpleContact[] getFavoriteContactDisplayName(int count){
+			
+			Cursor c = mAppContext.getContentResolver().query(
+					ContactsContract.Contacts.CONTENT_URI, 
+					new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, 
+							ContactsContract.Contacts.LAST_TIME_CONTACTED, ContactsContract.Contacts.LOOKUP_KEY}, 
+					ContactsContract.Contacts.STARRED + "= ?", 
+					new String[]{"1"}, 
+					null);	//sort by LAST_TIME_CONTACTED.
+
+			if(c == null){
+				//error happen.
+				return new SimpleContact[0];
+			}
+
+			int ct = 0;
+			//maximum list size is given integer count.
+			int listSize = (count < c.getCount()) ? count : c.getCount();
+
+			SimpleContact[] result = new SimpleContact[listSize];
+			while(c.moveToNext() == true){
+				//Log.i("RecentCallWidget", "Name:" + c.getString(idx1) + " Value: " + c.getString(idx2));
+				long id = c.getLong(0);
+				String name = c.getString(1);
+				long time = c.getLong(2);
+				String lookup = c.getString(3);
+				Uri uri = ContactsContract.Contacts.getLookupUri(id, lookup);
+				SimpleContact contact = new SimpleContact(name, uri, time);
+				result[ct] = contact;
+				++ct;
+				if(ct == listSize)	//list is full.
+					break;
+			}
+			c.close();
+
+			return result;
+		}		
 
 		void markContacted(String originatingAddress) {
 			//#1. select ContactsContract information by using phone number.
@@ -280,14 +381,20 @@ public class RecentContactsManager {
 		}
 	}//end of inner class	
 
-	private static String WIDGET_PREFERENCE = "setting";
-	private static String CURRENT_INDEX = "index";
+	private static final String WIDGET_PREFERENCE = "setting";
+	private static final String CURRENT_INDEX = "index";
+	private static final String CURRENT_MODE = "mode";
+	private static final int MODE_FAVORITE = 5551;
+	private static final int MODE_RECENT = 5552;
 	
 	private Context mAppContext = null;
 	private ContactsManager mContactsManager = null;
 	private int[] mCallItemList = new int[]{R.id.call1, R.id.call2, R.id.call3, R.id.call4, R.id.call5};
 	private String[] mCallIntentList = new String[]{RecentContactsWidget.ACTION_CALL_1, RecentContactsWidget.ACTION_CALL_2, RecentContactsWidget.ACTION_CALL_3};
 	private int mIndex = 0;
+	private int mLastContactIndex = 0;
+	private int mFavoriteIndex = 0;
+	private int mListMode = MODE_FAVORITE;
 	private long mLastContacted = -1;
 
 }//end of class

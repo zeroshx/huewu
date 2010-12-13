@@ -3,7 +3,7 @@
       package="com.huewu.apps.recentcontactswidget"
       android:versionCode="3"
       android:versionName="1.2">
-    <application android:icon="@drawable/icon" android:label="@string/app_name">
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
         <activity
 	        android:theme="@android:style/Theme.Translucent.NoTitleBar" 
     	    android:name="com.huewu.apps.recentcontactswidget.ShowQuickContactActivity"
@@ -26,6 +26,7 @@
 		        <action android:name="apps.huewu.recentcall.action.UPDATE" />
 		        <action android:name="apps.huewu.recentcall.action.SCROLL_UP" />
 		        <action android:name="apps.huewu.recentcall.action.SCROLL_DOWN" />
+		        <action android:name="apps.huewu.recentcall.action.SWITCH_MODE" />
 		    </intent-filter>
 		    <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />
 		</receiver>        

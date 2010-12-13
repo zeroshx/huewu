@@ -47,6 +47,7 @@ public class RecentContactsWidget extends AppWidgetProvider {
 	final static String ACTION_CALL_1 = "apps.huewu.recentcall.action.CALL_1";
 	final static String ACTION_CALL_2 = "apps.huewu.recentcall.action.CALL_2";
 	final static String ACTION_CALL_3 = "apps.huewu.recentcall.action.CALL_3";
+	final static String ACTION_SWITCH_MODE = "apps.huewu.recentcall.action.SWITCH_MODE";
 	
 	private static RecentContactsManager mWidgetManager = null;	
 	
@@ -107,6 +108,9 @@ public class RecentContactsWidget extends AppWidgetProvider {
 			//update recent call list.
 			stillviews = mWidgetManager.makeRecentCallWidget(context, RecentContactsManager.MODE_STILL_WIDGET);		
 			aniViews = mWidgetManager.makeRecentCallWidget(context, RecentContactsManager.MODE_DOWN_SCROLLING_WIDGET);
+		}else if(action.equals(ACTION_SWITCH_MODE) == true){
+			mWidgetManager.toggleMode();
+			stillviews = mWidgetManager.makeRecentCallWidget(context, RecentContactsManager.MODE_STILL_WIDGET);		
 		}else{
 			//receive non-handled broadcast intent. do nothing.
 			return;
@@ -124,7 +128,7 @@ public class RecentContactsWidget extends AppWidgetProvider {
 		//set alarm. (using ELAPSED_REALTIME in order to avoid to wake up device) 
 		AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		Intent i = new Intent(ACTION_UPDATE);
-		PendingIntent pending = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent pending = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 		am.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + updateTime, pending);
 	}
 }//end of class
