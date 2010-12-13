@@ -277,10 +277,16 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 	@Override
 	public void onLowMemory() {
 		Log.w("LogToaster", "Log Memory. reduce keeped log histroy as half.");
-		synchronized (mLogAdapter) {
-			int size = mLogAdapter.getCount() / 2;
-			for(int i = 0; i < size; ++ size)
-				mLogAdapter.remove(mLogAdapter.getItem(0));
+		try{
+			synchronized (mLogAdapter) {
+				int size = mLogAdapter.getCount() / 2;
+				if(size > 0){
+					for(int i = 0; i < size; ++ size)
+						mLogAdapter.remove(mLogAdapter.getItem(0));
+				}
+			}
+		}catch(Exception e){
+		}catch(Error e){
 		}
 		super.onLowMemory();
 	}
