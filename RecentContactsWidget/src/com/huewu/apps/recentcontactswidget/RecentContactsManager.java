@@ -104,7 +104,7 @@ public class RecentContactsManager {
 				 contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
 				 break;
 			 case MODE_FAVORITE:
-				 contacts = mContactsManager.getFavoriteContactDisplayName(100);
+				 contacts = mContactsManager.getFavoriteContactDisplayName(20);
 				 break;
 			 default:	//error happen. default is recent.
 				 contacts = mContactsManager.getRecentContactDisplayName(MAX_CONTACTS_COUNT);
@@ -193,6 +193,8 @@ public class RecentContactsManager {
 		}
 		editor.putInt(CURRENT_MODE, mListMode);
 		editor.commit();
+		
+		mToggled = true;
 	}
 
 	private void applyScroll(RemoteViews views, SimpleContact[] contacts, int move) {
@@ -214,7 +216,7 @@ public class RecentContactsManager {
 				++mIndex;
 				try{
 					//clone text value.
-					views.setTextViewText(mCallItemList[0], contacts[mIndex-1].mDisplayName);	//hide		
+					views.setTextViewText(mContactItemList[0], contacts[mIndex-1].mDisplayName);	//hide		
 				}catch(Exception e){
 				}				
 			}
@@ -224,7 +226,7 @@ public class RecentContactsManager {
 				--mIndex;
 				try{
 					//clone text value.
-					views.setTextViewText(mCallItemList[4], contacts[mIndex+3].mDisplayName);	//hide		
+					views.setTextViewText(mContactItemList[4], contacts[mIndex+3].mDisplayName);	//hide		
 				}catch(Exception e){
 				}
 			}
@@ -251,6 +253,14 @@ public class RecentContactsManager {
 	private void setCallListTexts(RemoteViews views, SimpleContact[] contacts) {
 		if(views == null)
 			return;
+		
+		if(mToggled == true){
+			//reset whole texts.
+			for(int i = 0; i < mContactItemList.length; ++i)
+				views.setTextViewText(mContactItemList[i], "");
+			
+			mToggled = false;
+		}
 
 		//mIndex is starting index of displayed contact item list.
 		int count = ( (contacts.length - mIndex) < DISPLAY_CONTACTS_COUNT ) ? (contacts.length - mIndex) : DISPLAY_CONTACTS_COUNT;
@@ -259,13 +269,13 @@ public class RecentContactsManager {
 		for(index = 0; index <count; ++index){
 			String name = contacts[mIndex + index].mDisplayName;
 			Uri uri = contacts[mIndex + index].mUri;
-			views.setTextViewText(mCallItemList[index + 1], name);
+			views.setTextViewText(mContactItemList[index + 1], name);
 			//pending intent which has the same action name can't copied. so use different action name for each button.
 			Intent intent = new Intent(mCallIntentList[index]);
 			intent.setData(uri);
 			intent.putExtra(ContactsContract.Contacts.DISPLAY_NAME, name);
 			PendingIntent pendingCall = PendingIntent.getActivity(mAppContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-			views.setOnClickPendingIntent(mCallItemList[index + 1], pendingCall);			
+			views.setOnClickPendingIntent(mContactItemList[index + 1], pendingCall);			
 		}
 	}
 	
@@ -332,8 +342,8 @@ public class RecentContactsManager {
 					ContactsContract.Contacts.CONTENT_URI, 
 					new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME, 
 							ContactsContract.Contacts.LAST_TIME_CONTACTED, ContactsContract.Contacts.LOOKUP_KEY}, 
-					ContactsContract.Contacts.STARRED + "= ?", 
-					new String[]{"1"}, 
+					ContactsContract.Contacts.STARRED + " = 1", 
+					null,
 					null);	//sort by LAST_TIME_CONTACTED.
 
 			if(c == null){
@@ -390,10 +400,10 @@ public class RecentContactsManager {
 	
 	private Context mAppContext = null;
 	private ContactsManager mContactsManager = null;
-	private int[] mCallItemList = new int[]{R.id.call1, R.id.call2, R.id.call3, R.id.call4, R.id.call5};
+	private int[] mContactItemList = new int[]{R.id.call1, R.id.call2, R.id.call3, R.id.call4, R.id.call5};
 	private String[] mCallIntentList = new String[]{RecentContactsWidget.ACTION_CALL_1, RecentContactsWidget.ACTION_CALL_2, RecentContactsWidget.ACTION_CALL_3};
 	private int mIndex = 0;
-	private int mLastContactIndex = 0;
+	private boolean mToggled = false;
 	private int mFavoriteIndex = 0;
 	private int mListMode = MODE_FAVORITE;
 	private long mLastContacted = -1;
