@@ -7,7 +7,7 @@
     <application android:icon="@drawable/icon" android:label="@string/app_name">
         <service
             android:label="Live Word Paper"
-            android:name="com.huewu.apps.tabtabenglish.LiveWordPaper"
+            android:name=".LiveWordPaper"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
