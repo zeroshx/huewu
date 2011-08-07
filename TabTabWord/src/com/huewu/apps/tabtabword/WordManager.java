@@ -40,7 +40,7 @@ public class WordManager {
 	void generateMeaning(){
 		
 		if(mWordList.size() == 0)
-			generateWords();
+			return;
 		else{
 			Word word = mWordList.get(0);
 			if(word != null){
