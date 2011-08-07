@@ -16,12 +16,20 @@
 
 package com.huewu.apps.tabtabword;
 
+import java.util.Random;
+
+import android.R.color;
 import android.app.WallpaperManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.Shader.TileMode;
 import android.os.Handler;
@@ -61,7 +69,7 @@ public class LiveWordPaper extends WallpaperService {
 	class WordPaintEngine extends Engine {
 
 		//		private ArrayList<Word> mWords = null;
-		private Bitmap mTile;
+		private Bitmap[] mTiles = new Bitmap[5];
 		private WordManager mWordManager = null;
 
 		private final Runnable mDrawWords = new Runnable() {
@@ -78,7 +86,11 @@ public class LiveWordPaper extends WallpaperService {
 
 		WordPaintEngine() {
 			// Create a Paint to draw the lines for our cube
-			mTile = BitmapFactory.decodeResource(getResources(), R.drawable.back_tile);
+			BitmapFactory.Options opt = new BitmapFactory.Options(); 
+			for(int i = 0; i < 5; ++i){
+				opt.inSampleSize = i + 1;
+				mTiles[i] = BitmapFactory.decodeResource(getResources(), R.drawable.back_tile, opt);
+			}
 		}
 
 		@Override
@@ -155,11 +167,17 @@ public class LiveWordPaper extends WallpaperService {
 			super.onTouchEvent(event);
 		}
 		
+		Random mBackColorRand = new Random();
+		private int mBackColor = Color.rgb(0, 0, 0);
 		void checkClick(){
 			if(mTouchX == -1 || mTouchY == -1)
 				return;
-			
 			mWordManager.checkTouch(mTouchX, mTouchY);
+			
+			if(mWordManager.count() == 0){
+				mWordManager.generateWords();
+				mBackColor  = Color.rgb(mBackColorRand.nextInt(100), mBackColorRand.nextInt(100), mBackColorRand.nextInt(100));
+			}
 			
 			mTouchX = -1;
 			mTouchY = -1;
@@ -194,7 +212,6 @@ public class LiveWordPaper extends WallpaperService {
 						// draw something
 						// drawCube(c);
 						drawBackground(c);
-						drawTouchPoint(c);
 						for(Word w : mWordManager.getWordList()){
 							w.setOffset(mOffset);
 							w.draw(c, delta);
@@ -225,18 +242,13 @@ public class LiveWordPaper extends WallpaperService {
 		}
 
 		private void drawBackground(Canvas c) {
+			c.drawARGB(255, 255, 255, 255);
 			Paint paint = new Paint();
-			paint.setShader(new BitmapShader(mTile, TileMode.REPEAT, TileMode.REPEAT));
+//			paint.setAlpha(100 + 30 * mWordManager.count());
+			paint.setShader(new BitmapShader(mTiles[mWordManager.count()-1], TileMode.REPEAT, TileMode.REPEAT));
+			paint.setColorFilter(new PorterDuffColorFilter(mBackColor, Mode.SCREEN));
+//			paint.setColor(color.background_dark);
 			c.drawPaint(paint);
-		}
-
-		/*
-		 * Draw a circle around the current touch point, if any.
-		 */
-		void drawTouchPoint(Canvas c) {
-			//            if (mTouchX >=0 && mTouchY >= 0) {
-			//                c.drawCircle(mTouchX, mTouchY, 80, mPaint);
-			//            }
 		}
 
 	}//end of inner class engine.
