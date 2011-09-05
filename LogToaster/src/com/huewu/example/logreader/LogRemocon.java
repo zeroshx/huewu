@@ -78,7 +78,8 @@ public class LogRemocon extends Activity implements DialogInterface.OnClickListe
 	protected void onPause() {
 		super.onPause();
 		try{
-			this.unbindService(mServiceConn);	
+			this.unbindService(mServiceConn);
+			mServiceConn = null;
 		}catch(Exception e){
 
 		}
@@ -104,14 +105,19 @@ public class LogRemocon extends Activity implements DialogInterface.OnClickListe
 
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
+		
+		if(mLoggingService == null)
+			super.onPrepareDialog(id, dialog);
+		
+		else{
+			Button btn = (Button) dialog.findViewById(android.R.id.button1);
 
-		Button btn = (Button) dialog.findViewById(android.R.id.button1);
-
-		if(mLoggingService.getToastVisibility() == true)
-			btn.setText(R.string.hide_toast);
-		else
-			btn.setText(R.string.show_toast);
-		super.onPrepareDialog(id, dialog);
+			if(mLoggingService.getToastVisibility() == true)
+				btn.setText(R.string.hide_toast);
+			else
+				btn.setText(R.string.show_toast);
+			super.onPrepareDialog(id, dialog);
+		}
 	}
 
 	@Override

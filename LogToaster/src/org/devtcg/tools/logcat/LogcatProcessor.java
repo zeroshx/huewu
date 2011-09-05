@@ -76,7 +76,7 @@ public abstract class LogcatProcessor extends HandlerThread
 		} catch (IOException e){
 			e.printStackTrace();
 			onError("Error reading from logcat process", e);
-		} finally	{
+		} finally {
 			if (reader != null)
 				try { reader.close(); } catch (IOException e) {}
 				stopCatter();

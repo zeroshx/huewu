@@ -38,4 +38,5 @@
     <string name="app_name">Log Toaster</string>
 	<string name="service_stop">OFF</string>
 	<string name="filter_priority">Select Filter Priority</string>
+	<string name="toast_tranparent_">Toast Transparent:</string>
 </resources>
