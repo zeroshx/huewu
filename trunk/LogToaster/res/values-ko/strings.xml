@@ -38,4 +38,5 @@
     <string name="app_name">로그 토스터</string>
 	<string name="service_stop">OFF</string>
 	<string name="filter_priority">로그 표시 레벨 설정</string>
+	<string name="toast_tranparent_">토스트 투명도:</string>
 </resources>

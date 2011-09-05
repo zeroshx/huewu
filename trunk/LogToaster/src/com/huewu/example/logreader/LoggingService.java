@@ -17,6 +17,7 @@ import android.graphics.Color;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.text.Html;
 import android.util.Log;
 import android.view.Display;
@@ -55,6 +56,7 @@ public class LoggingService extends Service{
 	final static String EXTRA_TOAST_VISIBILITY = "visiblity";	//for intent extra
 	final static String EXTRA_TOAST_SIZE = "size";				//for intent extra
 	final static String EXTRA_TOAST_LOCATION = "location";		//for intent extra
+	final static String EXTRA_TOAST_ALPHA = "alpha";			//for intent extra
 
 	final static int SIZE_100 = 1;
 	final static int SIZE_50 = 2;
@@ -113,6 +115,7 @@ public class LoggingService extends Service{
 			mVisibility = intent.getBooleanExtra(EXTRA_TOAST_VISIBILITY, false);
 			mSize = intent.getIntExtra(EXTRA_TOAST_SIZE, SIZE_30);
 			mGravity = intent.getIntExtra(EXTRA_TOAST_LOCATION, Gravity.BOTTOM);
+			mAlpha = intent.getIntExtra(EXTRA_TOAST_ALPHA, 120);
 			
 			if(mTags == null)
 				return;	//do nothing.
@@ -142,8 +145,8 @@ public class LoggingService extends Service{
 		super.onDestroy();
 		if(mLoggerProcess != null)
 			mLoggerProcess.stopCatter();
-		mHandler.removeMessages(NEW_MESSAGE);
-		mHandler.removeMessages(SHOW_MESSAGE);
+		Message msg = mHandler.obtainMessage(CLEAR_MESSAGE);
+		mHandler.sendMessageAtFrontOfQueue(msg);
 
 		if(mLogToast != null)
 			mLogToast.cancel();
@@ -202,7 +205,7 @@ public class LoggingService extends Service{
 		mLogToast.setGravity(mGravity, 0, 0);
 
 		LogView lv = new LogView(this);
-		lv.setBackgroundColor(Color.argb(120, 0, 0, 0));
+		lv.setBackgroundColor(Color.argb(mAlpha, 0, 0, 0));
 		lv.setTextSize(11.0f);
 		WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
 		Display display = wm.getDefaultDisplay();
@@ -236,6 +239,16 @@ public class LoggingService extends Service{
 			break;
 		}
 	}
+	
+	void setToastTransparent(int alpha){
+		if(alpha <= 50)
+			alpha = 50;		//min value.
+		
+		else if(alpha > 200)
+			alpha = 200;	//max value.
+		
+		mAlpha = alpha;
+	}
 
 	void setToastSize(int size){
 		//adjust toast size.
@@ -268,12 +281,12 @@ public class LoggingService extends Service{
 	void hideToast(){
 		mVisibility = false;
 		savePreference();
-		mHandler.removeMessages(NEW_MESSAGE);
-		mHandler.removeMessages(SHOW_MESSAGE);
+		Message msg = mHandler.obtainMessage(CLEAR_MESSAGE);
+		mHandler.sendMessageAtFrontOfQueue(msg);
 
-		if(mLogToast != null){
+		if(mLogToast != null)
 			mLogToast.cancel();
-		}
+
 	}
 
 	void updateToast(){
@@ -322,6 +335,10 @@ public class LoggingService extends Service{
 				this.removeMessages(SHOW_MESSAGE);
 				this.sendEmptyMessageDelayed(SHOW_MESSAGE, interval);
 				break;
+			case CLEAR_MESSAGE:
+				this.removeMessages(NEW_MESSAGE);
+				this.removeMessages(SHOW_MESSAGE);
+				break;
 			}
 		};
 	};	
@@ -366,6 +383,8 @@ public class LoggingService extends Service{
 	//priavte event-related predefines.
 	private final static int NEW_MESSAGE = 1001;
 	private final static int SHOW_MESSAGE = 1002;
+	private final static int CLEAR_MESSAGE = 1003;
+	
 	private final static long MIN_UPDATE_INTERVAL = 1000;
 	private final static long MAX_UPDATE_INTERVAL = 3000;
 	
@@ -379,6 +398,7 @@ public class LoggingService extends Service{
 	private long mLastUpdateTime = 0;
 	private ArrayList<String> mToastLogs = new ArrayList<String>();
 	private int mGravity = Gravity.BOTTOM;
+	private int mAlpha = 0;
 	private int mSize = 3;;    
 	private int mMaxLogLine = 8;
 	private String mTags = "";

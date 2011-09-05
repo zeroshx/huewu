@@ -93,6 +93,31 @@
 			android:onClick="handleClick"			
 			/>
 	</RelativeLayout>
+	<RelativeLayout
+		android:layout_width="fill_parent" 
+		android:layout_height="fill_parent"
+		android:layout_weight="1"
+		>
+		<TextView
+			android:layout_width="wrap_content" 
+			android:layout_height="fill_parent"
+			android:gravity="center_vertical"
+			android:layout_marginLeft="10dip"
+			android:text="Toast Transparent:"
+			android:layout_alignParentLeft="true"
+			android:textAppearance="@android:style/TextAppearance.Large"
+			/>
+		<SeekBar
+			android:id="@+id/toast_setting_transparent"
+			android:max="200"
+			android:layout_width="100dip" 
+			android:layout_height="wrap_content"
+			android:layout_marginRight="10dip"
+			android:layout_alignParentRight="true"
+			android:layout_centerVertical="true"
+			android:onClick="handleClick"			
+			/>
+	</RelativeLayout>	
 </LinearLayout>
 
 

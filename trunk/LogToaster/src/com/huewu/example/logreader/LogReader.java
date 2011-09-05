@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -31,6 +32,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.ToggleButton;
@@ -114,6 +117,23 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 		mToastVisibility = (ToggleButton) findViewById(R.id.toast_setting_visibility);
 		mToastLocation = (Button) findViewById(R.id.toast_setting_location);
 		mToastSize = (Button) findViewById(R.id.toast_setting_size);
+		mSeekBar = (SeekBar) findViewById(R.id.toast_setting_transparent);
+		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				updateToastTransparent();
+			}
+			
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+			
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+			}
+		});
 		
 		loggingServiceStopped();
 		bindService(new Intent(this, LoggingService.class), serviceConn, 0);		
@@ -140,6 +160,7 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 		mPreferenceVisibility = preference.getBoolean(LoggingService.EXTRA_TOAST_VISIBILITY, false);
 		mPreferenceSize = preference.getInt(LoggingService.EXTRA_TOAST_SIZE, LoggingService.SIZE_30);
 		mPreferenceLoc = preference.getInt(LoggingService.EXTRA_TOAST_LOCATION, Gravity.BOTTOM);
+		mPreferenceAlpha = preference.getInt(LoggingService.EXTRA_TOAST_ALPHA, 120);
 		applyPreference();
 	}
 
@@ -281,8 +302,10 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 			synchronized (mLogAdapter) {
 				int size = mLogAdapter.getCount() / 2;
 				if(size > 0){
-					for(int i = 0; i < size; ++ size)
-						mLogAdapter.remove(mLogAdapter.getItem(0));
+					for(int i = 0; i < size; ++ size){
+						if( mLogAdapter.getCount() > 0 )
+							mLogAdapter.remove(mLogAdapter.getItem(0));
+					}
 				}
 			}
 		}catch(Exception e){
@@ -325,6 +348,7 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 		i.putExtra(LoggingService.EXTRA_TOAST_VISIBILITY, mPreferenceVisibility);
 		i.putExtra(LoggingService.EXTRA_TOAST_LOCATION, mPreferenceLoc);
 		i.putExtra(LoggingService.EXTRA_TOAST_SIZE, mPreferenceSize);
+		i.putExtra(LoggingService.EXTRA_TOAST_ALPHA, mPreferenceAlpha);
 		bindService(i, serviceConn, 0);
 		startService(i);
 	}
@@ -463,7 +487,12 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 			intent.putExtra(Intent.EXTRA_TEXT, mSelectedLog);
 			break;
 		}
-		startActivity(intent);
+		
+		ComponentName cpName = intent.resolveActivity(getPackageManager());
+		if(cpName != null)
+			startActivity(intent);
+		else
+			Log.e("LogToaster", "There is not a proper activity for sending LogFile.");
 	}
 
 	void loggingServiceStarted(){
@@ -508,11 +537,14 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 			break;
 		}
 		
+		mSeekBar.setProgress(mPreferenceAlpha);
+		
 		if(mLoggingServiceEnable == true && mLoggingService != null){
 			mLoggingService.setToastSize(mPreferenceSize);
 			mLoggingService.setToastGravity(mPreferenceLoc);
+			mLoggingService.setToastTransparent(mPreferenceAlpha);
 			mLoggingService.updateToast();
-		}		
+		}
 	}
 	
 	void savePreference(){
@@ -525,7 +557,13 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 		edit.putBoolean(LoggingService.EXTRA_TOAST_VISIBILITY, mPreferenceVisibility);
 		edit.putInt(LoggingService.EXTRA_TOAST_SIZE, mPreferenceSize);
 		edit.putInt(LoggingService.EXTRA_TOAST_LOCATION, mPreferenceLoc);
+		edit.putInt(LoggingService.EXTRA_TOAST_ALPHA, mPreferenceAlpha);
 		edit.commit();		
+	}
+	
+	void updateToastTransparent(){
+		mPreferenceAlpha = mSeekBar.getProgress();
+		applyPreference();
 	}
 	
 	void toggleToastVisibility(){
@@ -599,11 +637,13 @@ public class LogReader extends Activity implements OnNewLogListener, DialogInter
 	private ToggleButton mToastVisibility = null;
 	private Button mToastLocation = null;
 	private Button mToastSize = null;
+	private SeekBar mSeekBar = null;
 	private AlertDialog mSizeDialog = null;
 	private AlertDialog mLocationDialog = null;
 	private AlertDialog mFilterDialog = null;
 	private String mPreferenceFilter = "";
 	private boolean mPreferenceVisibility = false;
+	private int mPreferenceAlpha = 50;
 	private int mPreferenceSize = 3;
 	private int mPreferenceLoc = Gravity.BOTTOM;
 	private String mPreferencePriority = "D";
